@@ -3,5 +3,5 @@
 
 
 # How to install
-It is not recomended to self host the Shadow Helper discord bot as it is not always up to date.\n
+It is not recomended to self host the Shadow Helper discord bot as it is not always up to date.\
 I recomend you use the bot hosted by me as it is up to date.
