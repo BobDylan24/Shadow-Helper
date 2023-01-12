@@ -85,9 +85,6 @@ class economy(commands.Cog):
 
         await update_bank(ctx.author,int(earnings))
 
-        with open("mainbank.json", "w") as f:
-            json.dump(users,f)
-
     @beg.error
     async def beg_handler(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):

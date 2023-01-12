@@ -5,6 +5,7 @@ import os
 import asyncio
 import random
 
+
 intents = discord.Intents.all()
 intents.message_content = True
 
@@ -13,6 +14,7 @@ activity = discord.Activity(type=discord.ActivityType.watching, name=f"Over /hel
 
 bot = commands.Bot(intents=intents, command_prefix="!", owner_id=[866285734808780812], activity=activity)
 
+bot.remove_command("help")
 
 @bot.event
 async def on_ready():
