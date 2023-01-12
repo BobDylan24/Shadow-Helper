@@ -5,6 +5,7 @@ import os
 import asyncio
 import random
 from aioconsole import aexec
+from .utils.mongo import Document
 
 intents = discord.Intents.all()
 intents.message_content = True
@@ -167,11 +168,16 @@ async def rules(ctx):
     embed.add_field(name="Rule #7", value="No advertising, don't send any advertisment to any channel in this discord server.", inline=False)
     await ctx.send(embed=embed)
 
-for filename in os.listdir('./cogs'):
-    if filename.endswith('.py'):
-        bot.load_extension(f"cogs.{filename[:-3]}")
-        print(f"Loaded Cog {filename[:-3]}")
-    else:
-        print(f"Failed to load cog {filename[:-3]}\n if the cog if __pycach then you may ignore it.")
 
-bot.run(config.token)
+if __name__ == "__main__":
+    bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(config.connection_url))
+    bot.db = bot.mongo["database"]
+    bot.warns = Document(bot.db, "warns")
+    for filename in os.listdir('./cogs'):
+        if filename.endswith('.py'):
+            bot.load_extension(f"cogs.{filename[:-3]}")
+            print(f"Loaded Cog {filename[:-3]}")
+        else:
+            print(f"Failed to load cog {filename[:-3]}\n if the cog if __pycach then you may ignore it.")
+
+    bot.run(config.token)
