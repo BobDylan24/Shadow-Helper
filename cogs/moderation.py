@@ -150,5 +150,16 @@ class moderation(commands.Cog):
             await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
             return
 
+    @commands.slash_command(name="purge", description="Deletes an amount of messages that you specify in the channel the command is ran in.")
+    @commands.has_guild_permissions(manage_messages=True)
+    async def purge(self, ctx, amount: discord.SlashCommandOptionType.integer):
+        if amount > 100:
+            await ctx.respond("You can only delete 100 or below messages.")
+        else:
+            embed = discord.Embed(title="Purged Channel", description="Successfully purged the channel", color=discord.Color.green())
+            embed.add_field(name="Amount", value=f"{amount} message(s)", inline=True)
+            await ctx.channel.purge(limit=amount)
+            await ctx.respond(embed=embed, delete_after=10)
+
 def setup(bot):
     bot.add_cog(moderation(bot))
