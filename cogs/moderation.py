@@ -19,7 +19,7 @@ class moderation(commands.Cog):
         self.bot = bot
 
 
-    @commands.slash_command(name="kick", description="Kicks the user you specify for the reason you specify.", guild_ids=[1057799094032138301])
+    @commands.slash_command(name="kick", description="Kicks the user you specify for the reason you specify.")
     @commands.has_guild_permissions(kick_members=True)
     async def kick(self, ctx, member : discord.SlashCommandOptionType.user):
         class MyModal(discord.ui.Modal):
@@ -53,7 +53,7 @@ class moderation(commands.Cog):
             print(error)
             await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
 
-    @commands.slash_command(name="ban", description="Bans the user you specify for the reason you specify.", guild_ids=[1057799094032138301])
+    @commands.slash_command(name="ban", description="Bans the user you specify for the reason you specify.")
     @commands.has_guild_permissions(ban_members=True)
     async def ban(self, ctx, member : discord.SlashCommandOptionType.user):
         class MyModal(discord.ui.Modal):
@@ -87,7 +87,7 @@ class moderation(commands.Cog):
             print(error)
             await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
 
-    @commands.slash_command(name="timeout", description="Times out the user you specify for the time you specify for the reason you specify.", guild_ids=[1057799094032138301])
+    @commands.slash_command(name="timeout", description="Times out the user you specify for the time you specify for the reason you specify.")
     @commands.has_guild_permissions(kick_members=True)
     async def timeout(self, ctx, member : discord.SlashCommandOptionType.user, time: discord.Option(int, "Select a time to time the person out for.", autocomplete=time_searcher)):
         class MyModal(discord.ui.Modal):
@@ -112,7 +112,7 @@ class moderation(commands.Cog):
         await ctx.send_modal(modall)
                 
 
-    @commands.slash_command(name="untimeout", description="Untimes out the user you specify.", guild_ids=[1057799094032138301])
+    @commands.slash_command(name="untimeout", description="Untimes out the user you specify.")
     @commands.has_guild_permissions(kick_members=True)
     async def untimeout(self, ctx, member : discord.SlashCommandOptionType.user):
         embed = discord.Embed(title="Untimed out Member", description="I have untimed out the member from the guild.", color=discord.Color.green())
