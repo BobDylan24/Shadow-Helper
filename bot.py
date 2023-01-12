@@ -59,6 +59,26 @@ async def on_ready():
     embed = discord.Embed(title="Reaction Roles", description="Click the buttons below to assign your self the roles you want.", color=discord.Color.blurple())
     await channel.send(embed=embed, view=MyView())
 
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(1062915775725318254)
+    guild = bot.get_guild(1062880883423584298)
+    class MyView(discord.ui.View):
+        @discord.ui.button(label="Verify", style=discord.ButtonStyle.success)
+        async def first_button_callback(self, button, interaction):
+            if interaction.user.id != member.id:
+                await interaction.response.send_message("You can't press this button", ephemeral=True)
+            else:
+                for child in self.children:
+                    child.disabled = True
+                await interaction.response.edit_message(view=self)
+                role_id = 1062915579599663164
+                role = discord.utils.get(guild.roles, id=role_id)
+                await interaction.followup.send("You have been verified! :white_check_mark:", ephemeral=True)
+                await interaction.user.add_roles(role)
+    embed = discord.Embed(title="Verify", description=f"Click here to verify {member.mention}", color=discord.Color.blurple())
+    await channel.send(embed=embed, view=MyView())
+
 @bot.slash_command(name="load", description="Loads the cog that you specify.", guild_ids=[1062880883423584298])
 @commands.is_owner()
 async def load(ctx, extension: discord.SlashCommandOptionType.string):
