@@ -25,32 +25,33 @@ async def on_ready():
     print(f"Logged into {bot.user}")
     channel = bot.get_channel(1062908409646694440)
     await channel.purge(limit=1)
+    guild = bot.get_guild(1062880883423584298)
     class MyView(discord.ui.View):
         @discord.ui.button(label="Bot Updates", style=discord.ButtonStyle.success)
         async def first_button_callback(self, button, interaction):
             role_id = 1062902392162619442
-            role = discord.utils.get(ctx.guild.roles, id=role_id)
+            role = discord.utils.get(guild.roles, id=role_id)
             await interaction.response.send_message("Added you to the Bot Updates Role.", ephemeral=True)
             await interaction.user.add_roles(role)
             return
         @discord.ui.button(label="Github Updates", style=discord.ButtonStyle.secondary)
         async def second_button_callback(self, button, interaction):
             role_id = 1062902911018999858
-            role = discord.utils.get(ctx.guild.roles, id=role_id)
+            role = discord.utils.get(guild.roles, id=role_id)
             await interaction.response.send_message("Added you to the Github Updates Role.", ephemeral=True)
             await interaction.user.add_roles(role)
             return
         @discord.ui.button(label="Giveaway Ping", style=discord.ButtonStyle.blurple)
         async def third_button_callback(self, button, interaction):
             role_id = 1062903246097743902
-            role = discord.utils.get(ctx.guild.roles, id=role_id)
+            role = discord.utils.get(guild.roles, id=role_id)
             await interaction.response.send_message("Added you to the Giveaway Ping Role.", ephemeral=True)
             await interaction.user.add_roles(role)
             return
         @discord.ui.button(label="Announcement Ping", style=discord.ButtonStyle.danger)
         async def fourth_button_callback(self, button, interaction):
             role_id = 1062903604937232474
-            role = discord.utils.get(ctx.guild.roles, id=role_id)
+            role = discord.utils.get(guild.roles, id=role_id)
             await interaction.response.send_message("Added you to the Announcement Ping Role.", ephemeral=True)
             await interaction.user.add_roles(role)
             return
