@@ -55,6 +55,13 @@ async def on_ready():
             await interaction.response.send_message("Added you to the Announcement Ping Role.", ephemeral=True)
             await interaction.user.add_roles(role)
             return
+        @discord.ui.button(label="Programmer", style=discord.ButtonStyle.red)
+        async def fith_button_callback(self, button, interaction):
+            role_id = 1062919843973701632
+            role = discord.utils.get(guild.roles, id=role_id)
+            await interaction.response.send_message("Added you to the Programmer Role.", ephemeral=True)
+            await interaction.user.add_roles(role)
+            return
     
     embed = discord.Embed(title="Reaction Roles", description="Click the buttons below to assign your self the roles you want.", color=discord.Color.blurple())
     await channel.send(embed=embed, view=MyView())
@@ -62,6 +69,7 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
     channel = bot.get_channel(1062915775725318254)
+    channel1 = bot.get_channel(1062921444041965589)
     guild = bot.get_guild(1062880883423584298)
     class MyView(discord.ui.View):
         @discord.ui.button(label="Verify", style=discord.ButtonStyle.success)
@@ -78,6 +86,10 @@ async def on_member_join(member):
                 await interaction.user.add_roles(role)
     embed = discord.Embed(title="Verify", description=f"Click here to verify {member.mention}", color=discord.Color.blurple())
     await channel.send(embed=embed, view=MyView())
+    embed = discord.Embed(title="Welcome!", description="A new person has joined the server!", color=discord.Color.green())
+    embed.add_field(name="Member Name", value=f"{member.mention}", inline=False)
+    embed.add_field(name="Account Creation Date", value=f"{member.created_at}", inline=False)
+    await channel1.send(embed=embed)
 
 @bot.slash_command(name="load", description="Loads the cog that you specify.", guild_ids=[1062880883423584298])
 @commands.is_owner()
