@@ -154,12 +154,24 @@ async def eval(ctx):
     modall = MyModal(title="Enter the code you want to run.")
     await ctx.send_modal(modall)
 
+@bot.slash_command(name="rules", description="The rules command for the support server.", guild_ids=[1062880883423584298])
+@commands.is_owner()
+async def rules(ctx):
+    embed = discord.Embed(title="Shadow Helper Rules", description="These are the rules for the Shadow Helper discord server. Any violeted will result in a punishment.", color=discord.Color.purple())
+    embed.add_field(name="Rule #1", value="Always listen to our staff members, if they tell you to stop doing something then stop. If you feel like they are telling you to stop for no reason then you may report them.", inline=False)
+    embed.add_field(name="Rule #2", value="Don't be disrespectfull to anyone, this includes staff members and members.", inline=False)
+    embed.add_field(name="Rule #3", value="No racism or homophobic language, it will not be tolerated and will be an instant blacklist from the community. **It is a hate crime**", inline=False)
+    embed.add_field(name="Rule #4", value="Don't beg for staff ranks, if you would like to become a staff member then you may apply. If we aren't accepting any more staff members then wait for the applications to open.", inline=False)
+    embed.add_field(name="Rule #5", value="Follow discord Terms of Service at all times. You will be reported to discord and removed from the community if found breaking any TOS.", inline=False)
+    embed.add_field(name="Rule #6", value="No DM advertising, don't send any advertisment messages to the dms of members in this server.", inline=False)
+    embed.add_field(name="Rule #7", value="No advertising, don't send any advertisment to any channel in this discord server.", inline=False)
+    await ctx.send(embed=embed)
+
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f"cogs.{filename[:-3]}")
         print(f"Loaded Cog {filename[:-3]}")
     else:
         print(f"Failed to load cog {filename[:-3]}\n if the cog if __pycach then you may ignore it.")
-
 
 bot.run(config.token)
