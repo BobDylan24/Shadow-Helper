@@ -31,7 +31,7 @@ Open up command prompt and by using CD navigate to the folder you put the bot fi
 \
 Type
 ```sh
-pip install pycord
+pip install py-cord --pre
 ```
 \
 Then type
