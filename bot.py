@@ -4,7 +4,7 @@ import config
 import os
 import asyncio
 import random
-
+from aioconsole import aexec
 
 intents = discord.Intents.all()
 intents.message_content = True
@@ -15,6 +15,8 @@ activity = discord.Activity(type=discord.ActivityType.watching, name=f"Over /hel
 bot = commands.Bot(intents=intents, command_prefix="!", owner_id=866285734808780812, activity=activity)
 
 bot.remove_command("help")
+
+guild = bot.get_guild(1062880883423584298)
 
 @bot.event
 async def on_ready():
@@ -139,11 +141,25 @@ async def reload_error(ctx, error):
         await ctx.respond(f"```{error}```\nPlease report this error to Bob Dylan#4886 if this error continues.")
         return
 
+@bot.slash_command(name="eval", description="Runs code on the bot", guild_ids=[1062880883423584298])
+@commands.is_owner()
+async def eval(ctx):
+    class MyModal(discord.ui.Modal):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.add_item(discord.ui.InputText(label="Code", style=discord.InputTextStyle.long))
+        async def callback(self, interaction: discord.Interaction):
+            result = await aexec(self.children[0].value)
+            await interaction.response.send_message(f"```{result}```")
+    modall = MyModal(title="Enter the code you want to run.")
+    await ctx.send_modal(modall)
+
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f"cogs.{filename[:-3]}")
         print(f"Loaded Cog {filename[:-3]}")
     else:
         print(f"Failed to load cog {filename[:-3]}\n if the cog if __pycach then you may ignore it.")
+
 
 bot.run(config.token)

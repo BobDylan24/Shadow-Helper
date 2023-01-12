@@ -52,6 +52,7 @@ class moderation(commands.Cog):
         else:
             print(error)
             await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
+            return
 
     @commands.slash_command(name="ban", description="Bans the user you specify for the reason you specify.")
     @commands.has_guild_permissions(ban_members=True)
@@ -86,6 +87,7 @@ class moderation(commands.Cog):
         else:
             print(error)
             await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
+            return
 
     @commands.slash_command(name="timeout", description="Times out the user you specify for the time you specify for the reason you specify.")
     @commands.has_guild_permissions(kick_members=True)
@@ -110,6 +112,19 @@ class moderation(commands.Cog):
                 await member.timeout_for(timeout_time)
         modall = MyModal(title="Why do you want to time this user out?")
         await ctx.send_modal(modall)
+
+    @timeout.error
+    async def timeout_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.respond("You are missing the `kick_members` permission.")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.respond("The user you are trying to time out has private messages turned off.\nThe user has been timed out but has not been sent a message in dms.")
+            return
+        else:
+            print(error)
+            await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
+            return
                 
 
     @commands.slash_command(name="untimeout", description="Untimes out the user you specify.")
@@ -124,6 +139,16 @@ class moderation(commands.Cog):
         embed.add_field(name="Date", value=today, inline=False)
         await member.send(embed=embed)
         await member.timeout_for(timeout_time)
+
+    @untimeout.error
+    async def untimeout_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.respond("You are missing the `kick_members` permission.")
+            return
+        else:
+            print(error)
+            await ctx.respond(f"```{error}```\nPlease report the error to Bob Dylan#4886 if this error continues.")
+            return
 
 def setup(bot):
     bot.add_cog(moderation(bot))
