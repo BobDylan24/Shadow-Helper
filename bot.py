@@ -70,6 +70,11 @@ async def on_ready():
     embed = discord.Embed(title="Reaction Roles", description="Click the buttons below to assign your self the roles you want.", color=discord.Color.blurple())
     await channel.send(embed=embed, view=MyView())
 
+    for document in await bot.config.get_all():
+        print(document)
+    
+    print("Initialized Database")
+
 @bot.event
 async def on_member_join(member):
     channel = bot.get_channel(1062915775725318254)
@@ -173,6 +178,7 @@ async def rules(ctx):
 if __name__ == "__main__":
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(config.connection_url))
     bot.db = bot.mongo["database"]
+    bot.config = Document(bot.db, "config")
     bot.warns = Document(bot.db, "warns")
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
