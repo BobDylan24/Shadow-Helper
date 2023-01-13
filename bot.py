@@ -5,7 +5,8 @@ import os
 import asyncio
 import random
 from aioconsole import aexec
-from .utils.mongo import Document
+from utils.mongo import Document
+import motor.motor_asyncio
 
 intents = discord.Intents.all()
 intents.message_content = True
