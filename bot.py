@@ -7,10 +7,19 @@ import random
 from aioconsole import aexec
 from utils.mongo import Document
 import motor.motor_asyncio
-
+import io
+import contextlib
+import textwrap
+from traceback import format_exception
 intents = discord.Intents.all()
 intents.message_content = True
 
+
+def clean_code(content):
+    if content.startswith("```") and content.endswith("```"):
+        return "\n".join(content.split("\n")[1:])[:-3]
+    else:
+        return content
 
 activity = discord.Activity(type=discord.ActivityType.watching, name=f"Over /help")
 
@@ -158,6 +167,37 @@ async def eval(ctx):
         async def callback(self, interaction: discord.Interaction):
             result = await aexec(self.children[0].value)
             await interaction.response.send_message(f"```{result}```")
+            code = clean_code(self.children[0].value)
+
+            local_variables = {
+                "discord": discord,
+                "commands": commands,
+                "bot": bot,
+                "ctx": ctx,
+                "channel": ctx.channel,
+                "author": ctx.author,
+                "guild": ctx.guild,
+                "message": ctx.message,
+            }
+
+            stdout = io.StringIO()
+
+            try:
+                with contextlib.redirect_stdout(stdout):
+                    exec(
+                        f"async def func():\n{textwrap.indent(code, '    ')}", local_variables,
+                    )
+
+                    obj = await local_variables["func"]()
+                    result = f"{stdout.getvalue()}\n-- {obj}\n"
+                    await ctx.respond(f"```{result}```")
+                    await interaction.response.send_message("Evaluated", ephemeral=True)
+            except Exception as e:
+                result = "".join(format_exception(e, e, e.__traceback__))
+                await ctx.repond(f"```{result}```")
+                await interaction.response.send_message("Evaluated", ephemeral=True)
+        
+
     modall = MyModal(title="Enter the code you want to run.")
     await ctx.send_modal(modall)
 
