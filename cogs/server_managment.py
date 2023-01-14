@@ -55,5 +55,47 @@ class server_managment(commands.Cog):
         await self.bot.welcome.upsert_custom(welcome_filter, welcome_data)
         await ctx.respond("Changed the welcome message! And the channel!")
 
+    @commands.slash_command(name="verifysetup", description="Sets up the verification message.")
+    @commands.has_guild_permissions(manage_guild=True)
+    async def verifysetup(self, ctx, message: discord.SlashCommandOptionType.string, channel: discord.SlashCommandOptionType.channel, role: discord.SlashCommandOptionType.role):
+        channelId = channel.id
+        roleId = role.id
+        verify_filter = {"guild_id": ctx.guild.id}
+        verify_data = {"message": message, "channel": channelId, "role": roleId}
+        await self.bot.verify.upsert_custom(verify_filter, verify_data)
+        await ctx.respond(f"Setup verification in channel {channel}.")
+
+    welcome = discord.SlashCommandGroup("welcome", "Welcome commands")
+
+    @welcome.command(name="enable", description="Sets the welcome message to be enabled.")
+    async def enable(self, ctx):
+        welcome_filter = {"guild_id": ctx.guild.id}
+        welcome_data = {"enable": True}
+        await self.bot.welcome.upsert_custom(welcome_filter, welcome_data)
+        await ctx.respond("Set welcome messages to be enabled! Make sure to set your welcome message using /welcomemessage")
+    
+    @welcome.command(name="disable", description="Sets the welcome message to be disabled.")
+    async def disable(self, ctx):
+        welcome_filter = {"guild_id": ctx.guild.id}
+        welcome_data = {"enable": False}
+        await self.bot.welcome.upsert_custom(welcome_filter, welcome_data)
+        await ctx.respond("Set welcome messages to be disabled!")
+    
+    verify = discord.SlashCommandGroup("verify", "Verify commands")
+
+    @verify.command(name="enable", description="Sets the verify message to be enabled.")
+    async def enable(self, ctx):
+        verify_filter = {"guild_id": ctx.guild.id}
+        verify_data = {"enable": True}
+        await self.bot.verify.upsert_custom(verify_filter, verify_data)
+        await ctx.respond("Set verify message to be enabled!")
+
+    @verify.command(name="disable", description="Sets the verify message to be disabled.")
+    async def enable(self, ctx):
+        verify_filter = {"guild_id": ctx.guild.id}
+        verify_data = {"enable": False}
+        await self.bot.verify.upsert_custom(verify_filter, verify_data)
+        await ctx.respond("Set verify message to be disabled!")
+
 def setup(bot):
     bot.add_cog(server_managment(bot))

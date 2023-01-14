@@ -86,33 +86,58 @@ async def on_ready():
     print("Initialized Database")
 
 @bot.event
+async def on_guild_join(guild):
+    welcome_data = {"guild_id": guild.id, "enable": False}
+    await bot.welcome.upsert(welcome_data)
+    verify_data = {"guild_id": guild.id, "enable": False}
+    await bot.verify.upsert(welcome_data)
+
+@bot.event
 async def on_member_join(member):
-    welcome_filter = {"guild_id", member.guild.id}
+    welcome_filter = {"guild_id", member.guild.id,}
     welcomes = await bot.welcome.find_many_by_custom({"guild_id": member.guild.id})
-    channel = bot.get_channel(1062915775725318254)
+    verify_filter = {"guild_id", member.guild.id,}
+    verifys = await bot.verify.find_many_by_custom({"guild_id": member.guild.id})
+    for verify in verifys:
+        channel = bot.get_channel(verify["channel"])
+        role_id = verify["role"]
+        global guild
+        guild = bot.get_guild(verify["guild_id"])
+        role = discord.utils.get(guild.roles, id=role_id)
+        verifyMessage = verify["message"]
+        enabled = verify["enable"]
     for welcome in welcomes:
         channel1 = bot.get_channel(welcome["channel"])
         welcomeMessage = welcome["message"]
-    guild = bot.get_guild(1062880883423584298)
-    #class MyView(discord.ui.View):
-        #@discord.ui.button(label="Verify", style=discord.ButtonStyle.success)
-        #async def first_button_callback(self, button, interaction):
-            #if interaction.user.id != member.id:
-                #await interaction.response.send_message("You can't press this button", ephemeral=True)
-            #else:
-                #for child in self.children:
-                    #child.disabled = True
-                #await interaction.response.edit_message(view=self)
-                #role_id = 1062915579599663164
-                #role = discord.utils.get(guild.roles, id=role_id)
-                #await interaction.followup.send("You have been verified! :white_check_mark:", ephemeral=True)
-                #await interaction.user.add_roles(role)
-    #embed = discord.Embed(title="Verify", description=f"Click here to verify {member.mention}", color=discord.Color.blurple())
-    #await channel.send(embed=embed, view=MyView())
-    embed = discord.Embed(title="Welcome!", description=welcomeMessage, color=discord.Color.green())
-    embed.add_field(name="Member Name", value=f"{member.mention}", inline=False)
-    embed.add_field(name="Account Creation Date", value=f"{member.created_at}", inline=False)
-    await channel1.send(embed=embed)
+        enable = welcome["enable"]
+    class MyView(discord.ui.View):
+        @discord.ui.button(label="Verify", style=discord.ButtonStyle.success)
+        async def first_button_callback(self, button, interaction):
+            if interaction.user.id != member.id:
+                await interaction.response.send_message("You can't press this button", ephemeral=True)
+            else:
+                for child in self.children:
+                    child.disabled = True
+                await interaction.response.edit_message(view=self)
+                await interaction.followup.send("You have been verified! :white_check_mark:", ephemeral=True)
+                await interaction.user.add_roles(role)
+    if enabled == False and enable == False:
+        return
+    elif enabled == True and enable == False:
+        embed = discord.Embed(title="Verify", description=verifyMessage, color=discord.Color.blurple())
+        await channel.send(embed=embed, view=MyView())
+    elif enabled == False and enable == True:  
+        embed = discord.Embed(title="Welcome!", description=welcomeMessage, color=discord.Color.green())
+        embed.add_field(name="Member Name", value=f"{member.mention}", inline=False)
+        embed.add_field(name="Account Creation Date", value=f"{member.created_at}", inline=False)
+        await channel1.send(embed=embed)
+    elif enabled == True and enable == True:
+        embed = discord.Embed(title="Verify", description=verifyMessage, color=discord.Color.blurple())
+        await channel.send(embed=embed, view=MyView())
+        embed = discord.Embed(title="Welcome!", description=welcomeMessage, color=discord.Color.green())
+        embed.add_field(name="Member Name", value=f"{member.mention}", inline=False)
+        embed.add_field(name="Account Creation Date", value=f"{member.created_at}", inline=False)
+        await channel1.send(embed=embed)
 
 @bot.slash_command(name="load", description="Loads the cog that you specify.", guild_ids=[1062880883423584298])
 @commands.is_owner()
@@ -246,6 +271,7 @@ if __name__ == "__main__":
     bot.config = Document(bot.db, "config")
     bot.warns = Document(bot.db, "warns")
     bot.welcome = Document(bot.db, "welcome")
+    bot.verify = Document(bot.db, "verify")
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
             bot.load_extension(f"cogs.{filename[:-3]}")
