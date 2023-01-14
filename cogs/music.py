@@ -268,7 +268,92 @@ class Music(commands.Cog):
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
         await ctx.send('An error occured: {}'.format(str(error)))
     
+    @commands.slash_command(name="join", description="The bot will join the voice channel you are in.")
+    async def join(self, ctx):
+        destination = ctx.author.voice.channel
+        if ctx.voice_state.voice:
+            await ctx.voice_state.voice.move_to(destination)
+            return
+        ctx.voice_state.voice = await destination.connect()
 
+    @commands.slash_command(name="summon", description="Summs the bot to a voice channel you specify.")
+    @commands.has_guild_permissions(manage_guild=True)
+    async def summon(self, ctx: commands.Context, *, channel: discord.SlashCommandOptionType.channel = None):
+        if not channel and not ctx.author.voice:
+            raise VoiceError("You are neither connected to a voice channel nor specified a channel to join.")
+        
+        destination = channel or ctx.author.voice_channel
+        if ctx.voice_state.voice:
+            await ctx.voice_state.voice.move_to(destination)
+            return
+        
+        ctx.voice_state.voice = await destination.connect()
+    
+    @commands.slash_command(name="leave", description="Disconencts the bot from the voice channel.")
+    async def leave(self, ctx: commands.Context):
+        if not ctx.voice_state.voice:
+            return await ctx.respond('Not connected to any voice channel.')
+        
+        await ctx.voice_state.stop()
+        del self.voice_states[ctx.guild.id]
+
+    @commands.slash_command(name="volume", description="Changes the volume of the bot.")
+    async def volume(self, ctx: commands.Context, volume: discord.SlashCommandOptionType.integer):
+        if not ctx.voice_state.is_playing:
+            return await ctx.respond("There is nothing being played!")
+        
+        if 0 > volume > 100:
+            return await ctx.respond('Volume must be between 0 and 100')
+        
+        ctx.voice_state.volume = volume / 100
+        await ctx.respond('Volume of the player set to {}%'.format(volume))
+
+    @commands.slash_command(name="now", description="Shows you what is currently playing")
+    async def now(self, ctx: commands.Context):
+        await ctx.send(embed=ctx.voice_state.current.create_embed())
+    
+    @commands.slash_command(name="pause", description="Pauses the music.")
+    async def pause(self, ctx: commands.Context):
+        if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+            ctx.voice_state.voice.pause()
+            await ctx.message.add_reaction('⏯')
+    
+    @commands.slash_command(name="resume", description="Resumes the music if paused.")
+    async def resume(self, ctx: commands.Context):
+        if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
+            ctx.voice_state.voice.resume()
+            await ctx.message.add_reaction('⏯')
+    
+    @commands.slash_command(name="stop", description="Stops playing the music and clears the queue.")
+    async def stop(self, ctx: commands.Context):
+        ctx.voice_state.songs.clear()
+
+        if not ctx.voice_state.is_playing:
+            ctx.voice_state.voice.stop()
+            await ctx.message.add_reaction('⏹')
+    
+    @commands.slash_command(name="skip", description="Vote to skip a song, the requester can automatically skip. 3 votes are required for the song to be skipped.")
+    async def skip(self, ctx: commands.Context):
+        if not ctx.voice_state.is_playing:
+            return await ctx.respond('Not playing any musing right now.')
+        
+        voter = ctx.message.author
+        if voter == ctx.voice_state.current.requester:
+            await ctx.message.add_reaction('⏭')
+            ctx.voice_state.skip()
+        elif voter.id not in ctx.voice.state.skip_votes:
+            ctx.voice_state.skip_votes.add(voter.id)
+            total_votes = len(ctx.voice_state.skip_votes)
+
+            if total_votes >= 3:
+                await ctx.message.add_reaction('⏭')
+                ctx.voice_state.skip()
+            else:
+                await ctx.respond('Skip vote added, currently at **{}/3**'.format(total_votes))
+        else:
+            await ctx.respond('You have already voted to skip this song.')
+        
+    
 
 def setup(bot):
     bot.add_cog(Music(bot))
