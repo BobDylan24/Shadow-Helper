@@ -24,7 +24,7 @@ class server_managment(commands.Cog):
 
     role = discord.SlashCommandGroup("role", "Role commands.")
 
-    @role.command()
+    @role.command(name="add", description="Adds the role you specify from the member you specify.")
     async def add(self, ctx, member: discord.SlashCommandOptionType.user, role: discord.SlashCommandOptionType.role):
         if role in member.roles:
             await ctx.respond(f"{member.mention} already has role {role}")
@@ -35,7 +35,7 @@ class server_managment(commands.Cog):
             await ctx.respond(embed=embed)
             await member.add_roles(role)
 
-    @role.command()
+    @role.command(name="remove", description="Removes the role you specify from the member you specify.")
     async def remove(self, ctx, member: discord.SlashCommandOptionType.user, role: discord.SlashCommandOptionType.role):
         if role not in member.roles:
             await ctx.respond(f"{member.mention} doesn't have role {role}!")
