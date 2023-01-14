@@ -214,6 +214,26 @@ async def rules(ctx):
     embed.add_field(name="Rule #7", value="No advertising, don't send any advertisment to any channel in this discord server.", inline=False)
     await ctx.send(embed=embed)
 
+@bot.slash_command(name="botupdate", description="Sends a bot update into bot updates channel", guild_ids=[1062880883423584298])
+@commands.is_owner()
+async def botupdate(ctx):
+    channel = bot.get_channel(1062908481734180875)
+    class MyModal(discord.ui.Modal):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+
+            self.add_item(discord.ui.InputText(label="The feature being added / updated", style=discord.InputTextStyle.short))
+            self.add_item(discord.ui.InputText(label="Bot Update Description", style=discord.InputTextStyle.long))
+        async def callback(self, interaction: discord.Interaction):
+            embed = discord.Embed(title=self.children[0].value, color=discord.Color.red())
+            role_id = 1062902392162619442
+            role = discord.utils.get(ctx.guild.roles, id=role_id)
+            embed.add_field(name="Description Of Bot Update", value=f"{self.children[1].value}", inline=False)
+            await channel.send(f"<@&{role.id}>", embed=embed)
+            await interaction.response.send_message("Bot Update Sent!", ephemeral=True)
+    modall = MyModal(title="Bot Update")
+    await ctx.send_modal(modall)
+
 
 if __name__ == "__main__":
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(config.connection_url))
