@@ -25,8 +25,8 @@ activity = discord.Activity(type=discord.ActivityType.watching, name=f"Over /hel
 
 bot = commands.Bot(intents=intents, command_prefix="!", owner_id=866285734808780812, activity=activity)
 
-bot.remove_command("help")
 
+bot.remove_command("help")
 guild = bot.get_guild(1062880883423584298)
 
 @bot.event

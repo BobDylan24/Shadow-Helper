@@ -1,27 +1,88 @@
-import discord
 from discord.ext import commands
 
-class help(commands.Cog):
+from utils.util import Pag
+
+class Help(commands.Cog, name="Help command"):
     def __init__(self, bot):
         self.bot = bot
+        self.cmds_per_page = 6
 
-    @commands.slash_command(name="help", description="Shows all commands in the bot and what they do.")
-    async def help(self, ctx):
-        embed = discord.Embed(title="Help", description="Here is a list of all the commands that Shadow Helper has to offer.")
-        embed.add_field(name="/cat", value="This command uses thecatapi to display an image of a random cat.", inline=False)
-        embed.add_field(name="/dog", value="This command uses dog.ceo to display an image of a random dog.", inline=False)
-        embed.add_field(name="/balance", value="Checks the balance of the command runner or a member if specified.", inline=False)
-        embed.add_field(name="/beg", value="Puts a random number of coins from 0 to 101 into the command runners wallet balance.", inline=False)
-        embed.add_field(name="/withdraw", value="Withdraws the amount of coins the command runner specifies from the command runner's bank", inline=False)
-        embed.add_field(name="/deposit", value="Deposits the amount of coins the command runner specifies from the command runner's wallet", inline=False)
-        embed.add_field(name="/slots", value="Bets an amount of coins the command runner specifies and doubles them if you win.", inline=False)
-        embed.add_field(name="/rob", value="Robs a user that the command issuer specifies from 0 to the amount of the money the mentioned user has in the wallet", inline=False)
-        embed.add_field(name="/shop", value="Opens up a shop menu where the command runner can spend their coins. The current things you can buy are an Computer and an Keyboard.", inline=False)
-        embed.add_field(name="/kick", value="Kicks a member from the guild that the command runner specifies for the reason the command runner specifies.", inline=False)
-        embed.add_field(name="/ban", value="Bans a member from the guild that the command runner specifies for the reason the command runner specifies.", inline=False)
-        embed.add_field(name="/timeout", value="Times out a member from the guild that the command runner specifies for the time the command runner specifies for the reason the command runner specifies.", inline=False)
-        embed.add_field(name="/untimeout", value="Untimes out a member from the guild that the command runner specifies.", inline=False)
-        await ctx.respond(embed=embed)
+    def get_command_signature(self, command: commands.Command, ctx: commands.Context):
+        cmd_invoke = f"[{command.name}]"
+
+        full_invoke = command.qualified_name.replace(command.name, "")
+
+        signature = f"/{full_invoke}{cmd_invoke}"
+        return signature
+
+    async def return_filtered_commands(self, walkable, ctx):
+        filtered = []
+
+        for c in walkable.walk_application_commands():
+            await c.can_run(ctx)
+            filtered.append(c)
+
+        return self.return_sorted_commands(filtered)
+
+    def return_sorted_commands(self, commandList):
+        return sorted(commandList, key=lambda x: x.name)
+
+    async def setup_help_pag(self, ctx, entity=None, title=None):
+        entity = entity or self.bot
+        title = title or self.bot.description
+
+        pages = []
+
+        if isinstance(entity, commands.Command):
+            filtered_commands = (
+                list(set(entity.all_commands.values()))
+                if hasattr(entity, "all_commands")
+                else []
+            )
+            filtered_commands.insert(0, entity)
+
+        else:
+            filtered_commands = await self.return_filtered_commands(entity, ctx)
+
+        for i in range(0, len(filtered_commands), self.cmds_per_page):
+            next_commands = filtered_commands[i : i + self.cmds_per_page]
+            commands_entry = ""
+
+            for cmd in next_commands:
+                desc = cmd.description
+                signature = self.get_command_signature(cmd, ctx)
+                subcommand = "Has subcommands" if hasattr(cmd, "all_commands") else ""
+
+                commands_entry += (
+                    f"• **__{cmd.name}__**\n```\n{signature}\n```\n{desc}\n"
+                    if isinstance(entity, commands.Command)
+                    else f"• **__{cmd.name}__**\n{desc}\n    {subcommand}\n"
+                )
+            pages.append(commands_entry)
+
+        await Pag(title=title, color=0xCE2029, entries=pages, length=1).start(ctx)
+
+
+    @commands.slash_command(
+        name="help", description="The help command!"
+    )
+    async def help_command(self, ctx, *, entity=None):
+        if not entity:
+            await self.setup_help_pag(ctx)
+
+        else:
+            cog = self.bot.get_cog(entity)
+            if cog:
+                await self.setup_help_pag(ctx, cog, f"{cog.qualified_name}'s commands")
+
+            else:
+                command = self.bot.get_command(entity)
+                if command:
+                    await self.setup_help_pag(ctx, command, command.name)
+
+                else:
+                    await ctx.send("Entity not found.")
+
 
 def setup(bot):
-    bot.add_cog(help(bot))
+    bot.add_cog(Help(bot))
