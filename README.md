@@ -36,6 +36,7 @@ pip install motor pynacl youtube-dl
 ```
 \
 Install ffmpeg exes into the bot directory [here](https://ffmpeg.org/download.html)
+\
 Then type
 ```sh
 python bot.py
