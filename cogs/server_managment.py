@@ -46,5 +46,14 @@ class server_managment(commands.Cog):
             await ctx.respond(embed=embed)
             await member.remove_roles(role)
 
+    @commands.slash_command(name="welcomemessage", description="Sets the welcome message for when people join your server.")
+    @commands.has_guild_permissions(manage_guild=True)
+    async def welcomemessage(self, ctx, message: discord.SlashCommandOptionType.string, channel: discord.SlashCommandOptionType.channel):
+        channelId = channel.id
+        welcome_filter = {"guild_id": ctx.guild.id}
+        welcome_data = {"message": message, "channel": channelId}
+        await self.bot.welcome.upsert_custom(welcome_filter, welcome_data)
+        await ctx.respond("Changed the welcome message! And the channel!")
+
 def setup(bot):
     bot.add_cog(server_managment(bot))
