@@ -124,17 +124,17 @@ async def on_member_join(member):
     if enabled == False and enable == False:
         return
     elif enabled == True and enable == False:
-        embed = discord.Embed(title="Verify", description=verifyMessage, color=discord.Color.blurple())
+        embed = discord.Embed(title="Verify", description=f"{verifyMessage}", color=discord.Color.blurple())
         await channel.send(embed=embed, view=MyView())
     elif enabled == False and enable == True:  
-        embed = discord.Embed(title="Welcome!", description=welcomeMessage, color=discord.Color.green())
+        embed = discord.Embed(title="Welcome!", description=f"{welcomeMessage}", color=discord.Color.green())
         embed.add_field(name="Member Name", value=f"{member.mention}", inline=False)
         embed.add_field(name="Account Creation Date", value=f"{member.created_at}", inline=False)
         await channel1.send(embed=embed)
     elif enabled == True and enable == True:
-        embed = discord.Embed(title="Verify", description=verifyMessage, color=discord.Color.blurple())
+        embed = discord.Embed(title="Verify", description=f"{verifyMessage}", color=discord.Color.blurple())
         await channel.send(embed=embed, view=MyView())
-        embed = discord.Embed(title="Welcome!", description=welcomeMessage, color=discord.Color.green())
+        embed = discord.Embed(title="Welcome!", description=f"{welcomeMessage}", color=discord.Color.green())
         embed.add_field(name="Member Name", value=f"{member.mention}", inline=False)
         embed.add_field(name="Account Creation Date", value=f"{member.created_at}", inline=False)
         await channel1.send(embed=embed)

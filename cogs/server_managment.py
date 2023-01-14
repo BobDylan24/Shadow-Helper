@@ -100,6 +100,15 @@ class server_managment(commands.Cog):
         verify_data = {"message": message, "channel": channelId, "role": roleId}
         await self.bot.verify.upsert_custom(verify_filter, verify_data)
         await ctx.respond(f"Setup verification in channel {channel}.")
+    
+    @commands.slash_command(name="nickname", description="Changes the nickname of the member you specify to what you specify.")
+    @commands.has_guild_permissions(change_nickname=True)
+    async def nickname(self, ctx, member: discord.SlashCommandOptionType.user, name: discord.SlashCommandOptionType.string):
+        embed = discord.Embed(title="Changed Nickname", description="Successfully changed the nickname", color=discord.Color.green())
+        embed.add_field(name="Old Name", value=f"{member.mention}", inline=False)
+        embed.add_field(name="New Name", value=f"{name}", inline=False)
+        await ctx.respond(embed=embed)
+        await member.edit(nick=name)
 
 def setup(bot):
     bot.add_cog(server_managment(bot))
