@@ -125,3 +125,150 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return ', '.join(duration)
 
+class Song:
+    __slots__ = ('source', 'requester')
+
+    def __init__(self, source: YTDLSource):
+        self.source = source
+        self.requester = source.requester
+
+    def create_embed(self):
+        embed = (discord.Embed(title='Now playing',
+                                description='```css\n{0.source.title}\n```'.format(self),
+                                color = discord.Color.blurple())
+                .add_field(name="Duration", value=self.source.duration)
+                .add_field(name="Requested by", value=self.requester.mention)
+                .add_field(name="Uploader", value='[{0.source.uploader}]({0.source.uploader_url})'.format(self))
+                .add_field(name="URL", value='[Click]({0.source.url})'.format(self))
+                .set_thumbnail(url=self.source.thumbnail))
+        return embed
+
+class SongQueue(asyncio.Queue):
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            return list(itertools.islice(self._queue, item.start, item.stop, item.step))
+        else:
+            return self._queue[item]
+    
+    def __iter__(self):
+        return self._queue.__iter__()
+
+    def __len__(self):
+        return self.qsize()
+    
+    def clear(self):
+        self._queue.clear()
+    
+    def shuffle(self):
+        random.shuffle(self._queue)
+
+    def remove(self, index: int):
+        del self._queue[index]
+
+class VoiceState:
+    def __init__(self, bot: commands.Bot, ctx: commands.Context):
+        self.bot = bot
+        self._ctx = ctx
+
+        self.current = None
+        self.voice = None
+        self.next = asyncio.Event()
+        self.songs = SongQueue()
+
+        self._loop = False
+        self._volume = 0.5
+        self.skip_votes = set()
+
+        self.audio_player = bot.loop.create_task(self.audio_player_task())
+    
+    def __del__(self):
+        self.audio_player.cancel()
+    
+    @property
+    def loop(self):
+        return self._loop
+    
+    @loop.setter
+    def loop(self, value: bool):
+        self._loop = value
+    
+    @property
+    def volume(self):
+        return self._volume
+
+    @volume.setter
+    def volume(self, value: float):
+        self._volume = value
+    
+    @property
+    def is_playing(self):
+        return self.voice and self.current
+
+    async def audio_player_task(self):
+        while True:
+            self.next.clear()
+
+            if not self.loop:
+                try:
+                    async with timeout(180):
+                        self.current = await self.songs.get()
+                except asyncio.TimeoutError:
+                    self.bot.loop.create_task(self.stop())
+                    return
+            
+            self.current.source.volume = self._volume
+            self.voice.play(self.current.source, after=self.play_next_song)
+            await self.current.source.channel.send(embed=self.current.create_Embed())
+
+            await self.next.wait()
+    
+    def play_next_song(self, error=None):
+        if error:
+            raise VoiceError(str(error))
+        
+        self.next.set()
+
+    def skip(self):
+        self.skip_votes.clear()
+
+        if self.is_playing:
+            self.voice.stop()
+    
+    async def stop(self):
+        self.songs.clear()
+
+        if self.voice:
+            await self.voice.disconnect()
+            self.voice = None
+
+class Music(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.voice_states = {}
+
+    def get_voice_state(self, ctx: commands.Context):
+        state = self.voice_states.get(ctx.guild.id)
+        if not state:
+            state = VoiceState(self.bot, ctx)
+            self.voice_states[ctx.guild.id] = state
+        return state
+
+    def cog_unload(self):
+        for state in self.voice_states.values():
+            self.bot.loop.create_task(state.stop())
+        
+    def cog_check(self, ctx: commands.Context):
+        if not ctx.guild:
+            raise commands.NoPrivateMessage("This command can\'t be used in DM channels.")
+        return True
+    
+    async def cog_before_invoke(self, ctx: commands.Context):
+        ctx.voice_state = self.get_voice_state(ctx)
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await ctx.send('An error occured: {}'.format(str(error)))
+    
+
+
+def setup(bot):
+    bot.add_cog(Music(bot))
