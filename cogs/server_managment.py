@@ -22,5 +22,28 @@ class server_managment(commands.Cog):
         modall = MyModal(title="Announcement")
         await ctx.send_modal(modall)
 
+    role = discord.SlashCommandGroup("role", "Role commands.")
+
+    @role.command()
+    async def add(self, ctx, member: discord.SlashCommandOptionType.user, role: discord.SlashCommandOptionType.role):
+        if role in member.roles:
+            await ctx.respond(f"{member.mention} already has role {role}")
+        embed = discord.Embed(title="Added Role", description="Successfully added the role!", color=discord.Color.green())
+        embed.add_field(name="Member", value=f"{member.mention}")
+        embed.add_field(name="Role", value=f"{role}")
+        await ctx.respond(embed=embed)
+        await member.add_roles(role)
+
+    @role.command()
+    async def remove(self, ctx, member: discord.SlashCommandOptionType.user, role: discord.SlashCommandOptionType.role):
+        if role not in member.roles:
+            await ctx.respond(f"{member.mention} doesn't have role {role}!")
+        else:
+            embed = discord.Embed(title="Removed Role", description="Successfuly removed the role!", color=discord.Color.green())
+            embed.add_field(name="Member", value=f"{member.mention}")
+            embed.add_field(name="Role", value=f"{role}")
+            await ctx.respond(embed=embed)
+            await member.remove_roles(role)
+
 def setup(bot):
     bot.add_cog(server_managment(bot))
