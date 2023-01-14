@@ -32,8 +32,10 @@ Open up command prompt and by using CD navigate to the folder you put the bot fi
 Type
 ```sh
 pip install py-cord --pre
+pip install motor pynacl youtube-dl
 ```
 \
+Install ffmpeg exes into the bot directory [here](https://ffmpeg.org/download.html)
 Then type
 ```sh
 python bot.py
