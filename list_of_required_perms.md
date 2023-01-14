@@ -1,7 +1,7 @@
 # Permissions you require for some commands
-MANAGE_MESSAGES/
-KICK_MEMBERS/
-BAN_MEMBERS/
+MANAGE_MESSAGES\
+KICK_MEMBERS\
+BAN_MEMBERS\
 
 
 # Permissions the bot requires
